@@ -7,9 +7,9 @@ Mopidy web extension designed for party
 Installation
 ============
 
-Install by running::
+After cloning, install by running::
 
-    pip install Mopidy-Party
+    pip install -e .
 
 
 Project resources
