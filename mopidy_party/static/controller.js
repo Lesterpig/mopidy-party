@@ -1,9 +1,23 @@
 'use strict';
 
-// TODO : add a mopidy service designed for angular
+// TODO : add a mopidy service designed for angular, to avoid ugly $scope.$apply()...
 
 angular.module('partyApp', [])
   .controller('MainController', function($scope) {
+
+  // Scope variables
+
+  $scope.message = [];
+  $scope.tracks  = [];
+  $scope.loading = true;
+  $scope.ready   = false;
+  $scope.currentState = {
+    paused : false,
+    track  : {
+      length : 0,
+      name   : '-'
+    }
+  };
 
   // Initialize
 
@@ -11,15 +25,63 @@ angular.module('partyApp', [])
     'callingConvention' : 'by-position-or-by-name'
   });
 
-  $scope.tracks = [];
+  // Adding listenners
+
+  mopidy.on('state:online', function () {
+    mopidy.playback
+    .getCurrentTrack()
+    .then(function(track){
+      if(track)
+        $scope.currentState.track = track;
+      return mopidy.playback.getState();
+    })
+    .then(function(state){
+      $scope.currentState.paused = (state === 'paused');
+    })
+    .done(function(){
+      $scope.ready   = true;
+      $scope.loading = false;
+      $scope.$apply();
+    });
+  });
+  mopidy.on('event:playbackStateChanged', function(event){
+    $scope.currentState.paused = (event.new_state === 'paused');
+    $scope.$apply();
+  });
+  mopidy.on('event:trackPlaybackStarted', function(event){
+    $scope.currentState.track = event.tl_track.track;
+    $scope.$apply();
+  });
+
+  $scope.printDuration = function(track){
+
+    if(!track.length)
+      return '';
+
+    var _sum = parseInt(track.length / 1000);
+    var _min = parseInt(_sum / 60);
+    var _sec = _sum % 60;
+
+    return '(' + _min + ':' + (_sec < 10 ? '0' + _sec : _sec) + ')' ;
+  };
+
+  $scope.togglePause = function(){
+    var _fn = $scope.currentState.paused ? mopidy.playback.resume : mopidy.playback.pause;
+    _fn().done();
+  };
 
   $scope.search = function(){
 
+    if(!$scope.searchField)
+      return;
+
+    $scope.message = [];
     $scope.loading = true;
 
     mopidy.library.search({
       'any' : [$scope.searchField]
     }).done(function(res){
+
       $scope.loading = false;
       $scope.tracks  = [];
 
@@ -48,7 +110,7 @@ angular.module('partyApp', [])
     })
     .then(function(){
       // Notify user
-      $scope.message = ['track_added', track.name];
+      $scope.message = ['success', 'Next track: ' + track.name];
       $scope.$apply();
       return mopidy.tracklist.setConsume([true]);
     })
@@ -63,10 +125,24 @@ angular.module('partyApp', [])
       return mopidy.playback.play();
     })
     .catch(function(){
-      $scope.message = ['error'];
+      $scope.message = ['error', 'Unable to add track, please try again...'];
       $scope.$apply();
     })
     .done();
+  };
+
+  $scope.nextTrack = function(){
+    mopidy.playback
+    .getTimePosition()
+    .then(function(time){
+      if(time < 60000){
+        $scope.message = ['error', 'Please wait a little before skipping this track ;)'];
+        return;
+      }
+      $scope.message = ['success', 'All right, next music will start now!'];
+      return mopidy.playback.next();
+    })
+    .done($scope.$apply);
   };
 
 
