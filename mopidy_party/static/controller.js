@@ -1,5 +1,7 @@
 'use strict';
 
+var MIN_DURATION_BEFORE_SKIP = 60000;
+
 // TODO : add a mopidy service designed for angular, to avoid ugly $scope.$apply()...
 
 angular.module('partyApp', [])
@@ -13,6 +15,7 @@ angular.module('partyApp', [])
   $scope.ready   = false;
   $scope.currentState = {
     paused : false,
+    length : 0,
     track  : {
       length : 0,
       name   : '-'
@@ -37,6 +40,10 @@ angular.module('partyApp', [])
     })
     .then(function(state){
       $scope.currentState.paused = (state === 'paused');
+      return mopidy.tracklist.getLength();
+    })
+    .then(function(length){
+      $scope.currentState.length = length;
     })
     .done(function(){
       $scope.ready   = true;
@@ -51,6 +58,12 @@ angular.module('partyApp', [])
   mopidy.on('event:trackPlaybackStarted', function(event){
     $scope.currentState.track = event.tl_track.track;
     $scope.$apply();
+  });
+  mopidy.on('event:tracklistChanged', function(){
+    mopidy.tracklist.getLength().done(function(length){
+      $scope.currentState.length = length;
+      $scope.$apply();
+    });
   });
 
   $scope.printDuration = function(track){
@@ -103,6 +116,9 @@ angular.module('partyApp', [])
   };
 
   $scope.addTrack = function(track){
+
+    track.disabled = true;
+
     mopidy.tracklist
     .index()
     .then(function(index){
@@ -125,6 +141,7 @@ angular.module('partyApp', [])
       return mopidy.playback.play();
     })
     .catch(function(){
+      track.disabled = false;
       $scope.message = ['error', 'Unable to add track, please try again...'];
       $scope.$apply();
     })
@@ -135,14 +152,17 @@ angular.module('partyApp', [])
     mopidy.playback
     .getTimePosition()
     .then(function(time){
-      if(time < 60000){
-        $scope.message = ['error', 'Please wait a little before skipping this track ;)'];
+      if(time < MIN_DURATION_BEFORE_SKIP){
+        var _toWait = parseInt((MIN_DURATION_BEFORE_SKIP - time)/1000);
+        $scope.message = ['error', 'Please wait at least '+_toWait+' seconds ;)'];
         return;
       }
       $scope.message = ['success', 'All right, next music will start now!'];
       return mopidy.playback.next();
     })
-    .done($scope.$apply);
+    .done(function(){
+      $scope.$apply();
+    });
   };
 
 

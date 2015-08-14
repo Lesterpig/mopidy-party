@@ -2,12 +2,18 @@
 Mopidy-Party
 ****************************
 
-Mopidy web extension designed for party
+Mopidy web extension designed for party! Let your guests manage the sound ;)
+
+- Minimal, fast web interface designed for mobile
+- Search soundtracks and add it to the queue
+- Skip current track (only if at least 1 min played from current track)
 
 Installation
 ============
 
-After cloning, install by running::
+You must install `mopidy <https://www.mopidy.com/>`_ and some backends (soundcloud, spofity, youtube...).
+
+After cloning the repository, install by running::
 
     pip install -e .
 
