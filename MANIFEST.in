@@ -6,3 +6,13 @@ include README.rst
 include mopidy_party/ext.conf
 
 recursive-include tests *.py
+
+# added by check_manifest.py
+recursive-include mopidy_party *.css
+recursive-include mopidy_party *.eot
+recursive-include mopidy_party *.html
+recursive-include mopidy_party *.js
+recursive-include mopidy_party *.svg
+recursive-include mopidy_party *.ttf
+recursive-include mopidy_party *.woff
+recursive-include mopidy_party *.woff2
