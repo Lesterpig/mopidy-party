@@ -1,9 +1,6 @@
 'use strict';
 
-var MIN_DURATION_BEFORE_SKIP = 60000;
-
 // TODO : add a mopidy service designed for angular, to avoid ugly $scope.$apply()...
-
 angular.module('partyApp', [])
   .controller('MainController', function($scope) {
 
@@ -106,6 +103,16 @@ angular.module('partyApp', [])
           if(res[i].tracks && res[i].tracks[_index]){
             $scope.tracks.push(res[i].tracks[_index]);
             _found = true;
+            mopidy.tracklist.filter({'uri': [res[i].tracks[_index].uri]}).done(function(matches){
+    if (matches.length) {
+      for (var i = 0; i < $scope.tracks.length; i++)
+      {
+        if ($scope.tracks[i].uri == matches[0].track.uri)
+          $scope.tracks[i].disabled = true;
+      }
+      $scope.$apply();
+    }
+      });
           }
         }
         _index++;
@@ -122,7 +129,7 @@ angular.module('partyApp', [])
     mopidy.tracklist
     .index()
     .then(function(index){
-      return mopidy.tracklist.add({uris: [track.uri], at_position: index+1});
+      return mopidy.tracklist.add({uris: [track.uri]});
     })
     .then(function(){
       // Notify user
@@ -149,21 +156,10 @@ angular.module('partyApp', [])
   };
 
   $scope.nextTrack = function(){
-    mopidy.playback
-    .getTimePosition()
-    .then(function(time){
-      if(time < MIN_DURATION_BEFORE_SKIP){
-        var _toWait = parseInt((MIN_DURATION_BEFORE_SKIP - time)/1000);
-        $scope.message = ['error', 'Please wait at least '+_toWait+' seconds ;)'];
-        return;
-      }
-      $scope.message = ['success', 'All right, next music will start now!'];
-      return mopidy.playback.next();
-    })
-    .done(function(){
-      $scope.$apply();
-    });
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.open( "GET", "/party/vote", false ); // false for synchronous request
+    xmlHttp.send( null );
+    $scope.message = ['success', xmlHttp.responseText];
+    $scope.$apply();
   };
-
-
 });
