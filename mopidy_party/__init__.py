@@ -1,11 +1,45 @@
-from __future__ import unicode_literals
+from __future__ import absolute_import, unicode_literals
 
-import logging
 import os
 
-from mopidy import config, ext
+import tornado.web
+
+from mopidy import ext, config
 
 __version__ = '0.1.1'
+
+
+class PartyRequestHandler(tornado.web.RequestHandler):
+    REQUIRED_VOTES = 3
+
+    def initialize(self, core, data):
+	self.core = core
+	self.data = data
+
+    def get(self):
+	ct = self.core.playback.get_current_track().get()
+	if (ct == None): return
+	ct = ct.uri
+	if (ct != self.data["track"]):
+	    self.data["track"] = ct
+	    self.data["votes"] = []
+
+	if (self.request.remote_ip in self.data["votes"]):
+	    self.write("You have already voted to skip this song =)")
+	else: # Valid vote
+            self.data["votes"].append(self.request.remote_ip)
+	    if (len(self.data["votes"]) == self.REQUIRED_VOTES):
+		self.core.playback.next()
+	    self.write("You have voted to skip this song. ("+str(self.REQUIRED_VOTES-len(self.data["votes"]))+" more votes needed)")
+
+
+
+def party_factory(config, core):
+    data = {'track': "", 'votes': []}
+    return [
+	('/vote', PartyRequestHandler, {'core': core, 'data':data})
+    ]
+
 
 class Extension(ext.Extension):
 
@@ -26,3 +60,7 @@ class Extension(ext.Extension):
             'name': self.ext_name,
             'path': os.path.join(os.path.dirname(__file__), 'static'),
         })
+	registry.add('http:app', {
+	    'name': self.ext_name,
+	    'factory': party_factory,
+	})

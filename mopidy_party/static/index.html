@@ -8,6 +8,7 @@
     <title>Party!</title>
 
     <link href="vendors/bootstrap.min.css" rel="stylesheet">
+    <link href="party.css" rel="stylesheet">
 
     <script type="text/javascript" src="/mopidy/mopidy.min.js"></script>
     <script type="text/javascript" src="vendors/angular.min.js"></script>
@@ -56,7 +57,8 @@
             <span class="glyphicon glyphicon-play" ng-if="!track.disabled"></span>
             <span class="glyphicon glyphicon-ok"   ng-if="track.disabled"></span>
           </button>
-          {{ track.name }} <small>{{ printDuration(track) }}</small>
+          <span class="tracklist-artist">{{ track.artists[0].name }}</span><br>
+	  <span class="tracklist-track">{{ track.name }}</span><span class="tracklist-duration">&nbsp;&nbsp;{{ printDuration(track) }}</span>
         </li>
       </ul>
     </div>

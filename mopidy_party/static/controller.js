@@ -106,6 +106,18 @@ angular.module('partyApp', [])
           if(res[i].tracks && res[i].tracks[_index]){
             $scope.tracks.push(res[i].tracks[_index]);
             _found = true;
+            mopidy.tracklist.filter({'uri': [res[i].tracks[_index].uri]}).done(function(matches){
+		if (matches.length) {
+		  for (var i = 0; i < $scope.tracks.length; i++)
+		  {
+		    if ($scope.tracks[i].uri == matches[0].track.uri)
+		    	$scope.tracks[i].disabled = true;
+		    console.log(matches[0].track.uri);
+		    console.log($scope.tracks[i].uri);
+		  }
+		  $scope.$apply();
+		}
+	    });
           }
         }
         _index++;
@@ -122,7 +134,7 @@ angular.module('partyApp', [])
     mopidy.tracklist
     .index()
     .then(function(index){
-      return mopidy.tracklist.add({uris: [track.uri], at_position: index+1});
+      return mopidy.tracklist.add({uris: [track.uri]});
     })
     .then(function(){
       // Notify user
@@ -149,7 +161,7 @@ angular.module('partyApp', [])
   };
 
   $scope.nextTrack = function(){
-    mopidy.playback
+    /*mopidy.playback
     .getTimePosition()
     .then(function(time){
       if(time < MIN_DURATION_BEFORE_SKIP){
@@ -162,7 +174,13 @@ angular.module('partyApp', [])
     })
     .done(function(){
       $scope.$apply();
-    });
+    });*/
+    
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.open( "GET", "/party/vote", false ); // false for synchronous request
+    xmlHttp.send( null );
+    $scope.message = ['success', xmlHttp.responseText];
+    $scope.$apply();
   };
 
 
