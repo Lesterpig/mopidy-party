@@ -18,7 +18,7 @@ angular.module('partyApp', [])
     length : 0,
     track  : {
       length : 0,
-      name   : '-'
+      name   : 'Nothing playing, add some songs to get the party going!'
     }
   };
 
