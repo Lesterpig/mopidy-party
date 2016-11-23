@@ -23,6 +23,14 @@ You must install `mopidy <https://www.mopidy.com/>`_ and some backends (soundclo
 
     sudo pip install -e .
 
+Usage
+=====
+
+To use the interface, simply point your browser to your Mopidy instance's IP address at port 6680 to see all available web interfaces.
+For example, http://192.168.0.2:6680/
+
+Direct access to Mopidy Party would then be: http://192.168.0.2:6680/party/
+
 
 Project resources
 =================
