@@ -11,13 +11,9 @@ __version__ = '0.1.2'
 
 class PartyRequestHandler(tornado.web.RequestHandler):
 
-	def initialize(self, core, config):
+	def initialize(self, core, data, config):
 		self.core = core
-		self.data = {'track':"", 'votes':[]}
-		#if ("votes_to_skip" in config["party"]):
 		self.requiredVotes = config["party"]["votes_to_skip"]
-		#else:
-		#	self.requiredVotes = 3
 
 	def get(self):
 		currentTrack = self.core.playback.get_current_track().get()
@@ -42,8 +38,9 @@ class PartyRequestHandler(tornado.web.RequestHandler):
 
 
 def party_factory(config, core):
+	self.data = {'track':"", 'votes':[]}
 	return [
-	('/vote', PartyRequestHandler, {'core': core, 'config':config})
+	('/vote', PartyRequestHandler, {'core': core, 'data':data, 'config':config})
 	]
 
 
