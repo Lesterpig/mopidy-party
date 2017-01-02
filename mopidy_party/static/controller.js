@@ -112,8 +112,6 @@ angular.module('partyApp', [])
 		  {
 		    if ($scope.tracks[i].uri == matches[0].track.uri)
 		    	$scope.tracks[i].disabled = true;
-		    console.log(matches[0].track.uri);
-		    console.log($scope.tracks[i].uri);
 		  }
 		  $scope.$apply();
 		}
