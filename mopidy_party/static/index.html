@@ -8,7 +8,7 @@
     <title>Party!</title>
 
     <link href="vendors/bootstrap.min.css" rel="stylesheet">
-    <link href="party.css" rel="stylesheet">
+    <link href="style.css" rel="stylesheet">
 
     <script type="text/javascript" src="/mopidy/mopidy.min.js"></script>
     <script type="text/javascript" src="vendors/angular.min.js"></script>
@@ -53,12 +53,19 @@
 
       <ul class="list-group" style="margin-top:20px">
         <li class="list-group-item" ng-repeat="track in tracks">
-          <button type="button" class="btn btn-xs btn-success" ng-click="addTrack(track)" ng-disabled="track.disabled">
+          <button type="button" class="btn btn-xs btn-success add-button" ng-click="addTrack(track)" ng-disabled="track.disabled">
             <span class="glyphicon glyphicon-play" ng-if="!track.disabled"></span>
             <span class="glyphicon glyphicon-ok"   ng-if="track.disabled"></span>
           </button>
-          <span class="tracklist-artist">{{ track.artists[0].name }}</span><br>
-	  <span class="tracklist-track">{{ track.name }}</span><span class="tracklist-duration">&nbsp;&nbsp;{{ printDuration(track) }}</span>
+          {{ track.name }} <small>{{ printDuration(track) }}</small><br>
+          <small>
+            {{ track.album.name }}
+            <span ng-if="track.artists">by</span>
+            <span ng-repeat="artist in track.artists">
+              <span ng-if="!$first"> & </span>
+              {{ artist.name }}
+            </span>
+          </small>
         </li>
       </ul>
     </div>

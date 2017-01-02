@@ -6,7 +6,7 @@ import tornado.web
 
 from mopidy import ext, config
 
-__version__ = '0.1.1'
+__version__ = '0.1.2'
 
 
 class PartyRequestHandler(tornado.web.RequestHandler):
