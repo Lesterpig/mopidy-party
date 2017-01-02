@@ -14,7 +14,10 @@ class PartyRequestHandler(tornado.web.RequestHandler):
 	def initialize(self, core, config):
 		self.core = core
 		self.data = {'track':"", 'votes':[]}
-		self.requiredVotes = config["party"]["votes_to_skip"]
+		if ("votes_to_skip" in config["party"]):
+			self.requiredVotes = config["party"]["votes_to_skip"]
+		else:
+			self.requiredVotes = 3
 
 	def get(self):
 		currentTrack = self.core.playback.get_current_track().get()
@@ -56,6 +59,7 @@ class Extension(ext.Extension):
 
 	def get_config_schema(self):
 		schema = super(Extension, self).get_config_schema()
+		schema['votes_to_skip'] = config.Integer(minimum=0)
 		return schema
 
 	def setup(self, registry):
