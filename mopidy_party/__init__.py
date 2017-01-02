@@ -13,6 +13,7 @@ class PartyRequestHandler(tornado.web.RequestHandler):
 
 	def initialize(self, core, data, config):
 		self.core = core
+		self.data = data
 		self.requiredVotes = config["party"]["votes_to_skip"]
 
 	def get(self):
