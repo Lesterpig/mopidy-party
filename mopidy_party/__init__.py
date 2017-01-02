@@ -43,7 +43,7 @@ class PartyRequestHandler(tornado.web.RequestHandler):
 
 def party_factory(config, core):
 	return [
-	('/vote', PartyRequestHandler, {'core': core, 'data':data, 'config':config})
+	('/vote', PartyRequestHandler, {'core': core, 'config':config})
 	]
 
 
