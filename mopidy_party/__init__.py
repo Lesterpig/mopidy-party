@@ -4,40 +4,46 @@ import os
 
 import tornado.web
 
-from mopidy import ext, config
+from mopidy import config, ext
 
 __version__ = '0.1.2'
 
 
 class PartyRequestHandler(tornado.web.RequestHandler):
-    REQUIRED_VOTES = 3
 
-    def initialize(self, core, data):
-	self.core = core
-	self.data = data
+    def initialize(self, core, config):
+		self.core = core
+		self.data = {'track':"", 'votes':[]}
+		self.requiredVotes = config["party"]["votes_to_skip"]
 
     def get(self):
-	ct = self.core.playback.get_current_track().get()
-	if (ct == None): return
-	ct = ct.uri
-	if (ct != self.data["track"]):
-	    self.data["track"] = ct
-	    self.data["votes"] = []
+		currentTrack = self.core.playback.get_current_track().get()
+		if (currentTrack == None): return
+		currentTrackURI = currentTrack.uri
 
-	if (self.request.remote_ip in self.data["votes"]):
-	    self.write("You have already voted to skip this song =)")
-	else: # Valid vote
-            self.data["votes"].append(self.request.remote_ip)
-	    if (len(self.data["votes"]) == self.REQUIRED_VOTES):
-		self.core.playback.next()
-	    self.write("You have voted to skip this song. ("+str(self.REQUIRED_VOTES-len(self.data["votes"]))+" more votes needed)")
+		# If the current track is different to the one stored, clear votes
+		if (currentTrackURI != self.data["track"]):
+		    self.data["track"] = currentTrackURI
+		    self.data["votes"] = []
+
+		if (self.request.remote_ip in self.data["votes"]): # User has already voted
+		    self.write("You have already voted to skip this song =)")
+		else: # Valid vote
+   	         self.data["votes"].append(self.request.remote_ip)
+	  	  if (len(self.data["votes"]) == self.requiredVotes):
+			self.core.playback.next()
+			self.write("Skipping...")
+		    else:
+		    	self.write("You have voted to skip this song. ("+str(self.requiredVotes-len(self.data["votes"]))+" more votes needed)")
 
 
 
 def party_factory(config, core):
+	global REQUIRED_VOTES
+	REQUIRED_VOT
     data = {'track': "", 'votes': []}
     return [
-	('/vote', PartyRequestHandler, {'core': core, 'data':data})
+	('/vote', PartyRequestHandler, {'core': core, 'data':data, 'config':config})
     ]
 
 
@@ -60,7 +66,7 @@ class Extension(ext.Extension):
             'name': self.ext_name,
             'path': os.path.join(os.path.dirname(__file__), 'static'),
         })
-	registry.add('http:app', {
-	    'name': self.ext_name,
-	    'factory': party_factory,
-	})
+		registry.add('http:app', {
+	    	'name': self.ext_name,
+	    	'factory': party_factory,
+		})
