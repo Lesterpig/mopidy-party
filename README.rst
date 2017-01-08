@@ -31,7 +31,6 @@ For example, http://192.168.0.2:6680/
 
 Direct access to Mopidy Party would then be: http://192.168.0.2:6680/party/
 
-
 Project resources
 =================
 
@@ -39,16 +38,17 @@ Project resources
 - `Issue tracker <https://github.com/Lesterpig/mopidy-party/issues>`_
 - `Development branch tarball <https://github.com/Lesterpig/mopidy-party/archive/master.tar.gz#egg=Mopidy-Party-dev>`_
 
-
 Changelog
 =========
 
+v0.2.0 (2017-01-08)
+----------------------------------------
+- Added vote to skip (by RealityFork)
+
 v0.1.2 (2016-10-10)
 ----------------------------------------
-
 - Add artists and album names in songs list
 
 v0.1.0 (2015-09-01)
 ----------------------------------------
-
 - Initial release.
