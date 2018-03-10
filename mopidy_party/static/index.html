@@ -3,11 +3,12 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <title>Party!</title>
 
     <link href="vendors/bootstrap.min.css" rel="stylesheet">
+    <link href="vendors/fontawesome-all.min.css" rel="stylesheet">
     <link href="style.css" rel="stylesheet">
 
     <script type="text/javascript" src="/mopidy/mopidy.min.js"></script>
@@ -17,32 +18,32 @@
   <body ng-controller="MainController">
     <div class="container-fluid" style="margin-top:20px">
       <div class="row">
-        <div class="col-xs-4">
-          <button type="button" class="btn" ng-click="togglePause()" ng-disabled="!ready" ng-class="{'btn-success' : currentState.paused, 'btn-danger': !currentState.paused}">
-            <span class="glyphicon glyphicon-pause" ng-class="{'glyphicon-play': currentState.paused, 'glyphicon-pause' : !currentState.paused}"></span>
+        <div class="col-4">
+          <button type="button" class="btn" ng-model="button" ng-click="togglePause()" ng-disabled="!ready || currentState.length === 0" ng-class="{'btn-success' : currentState.paused, 'btn-danger': !currentState.paused}">
+            <span class="fas fa-pause" ng-class="{'fa-play': currentState.paused, 'fa-pause' : !currentState.paused}"></span>
           </button>
-          <button type="button" class="btn btn-primary" ng-click="nextTrack()" ng-disabled="!ready">
-            <span class="glyphicon glyphicon-fast-forward"></span>
+          <button type="button" class="btn btn-primary" ng-model="button" ng-click="nextTrack()" ng-disabled="!ready || currentState.length === 0">
+            <span class="fas fa-step-forward"></span>
           </button>
           <p><small>
-            <span class="glyphicon glyphicon-equalizer" ng-if="currentState.length  >  0"></span>
-            <span class="glyphicon glyphicon-alert"     ng-if="currentState.length === 0"></span>
+            <span class="fas fa-music" ng-if="currentState.length > 0"></span>
+            <span class="fas fa-exclamation-triangle" ng-if="currentState.length === 0"></span>
             {{ currentState.length }} track{{ currentState.length > 1 ? 's' : '' }}
           </small></p>
         </div>
-        <div class="col-xs-8">
-          <div class="well well-sm">
+        <div class="col-8">
+          <div class="card card-body bg-light">
             {{ currentState.track.name }} <small>{{ printDuration(currentState.track) }}</small>
           </div>
         </div>
       </div>
       <div class="row">
-        <div class="col-xs-12">
+        <div class="col-12">
           <form ng-submit="search()">
             <input type="text" role="search" class="form-control" placeholder="Search..." ng-model="searchField" ng-disabled="!ready">
           </form>
           <div ng-show="loading" class="container-fluid">
-            <p><span class="glyphicon glyphicon-hourglass"></span> Loading...</p>
+            <p><span class="fas fa-hourglass"></span> Loading...</p>
           </div>
         </div>
       </div>
@@ -53,9 +54,9 @@
 
       <ul class="list-group" style="margin-top:20px">
         <li class="list-group-item" ng-repeat="track in tracks">
-          <button type="button" class="btn btn-xs btn-success add-button" ng-click="addTrack(track)" ng-disabled="track.disabled">
-            <span class="glyphicon glyphicon-play" ng-if="!track.disabled"></span>
-            <span class="glyphicon glyphicon-ok"   ng-if="track.disabled"></span>
+          <button type="button" class="btn btn-xs btn-success add-button" ng-model="button" ng-click="addTrack(track)" ng-disabled="track.disabled">
+            <span class="fas fa-play" ng-if="!track.disabled"></span>
+            <span class="fas fa-check" ng-if="track.disabled"></span>
           </button>
           {{ track.name }} <small>{{ printDuration(track) }}</small><br>
           <small>
