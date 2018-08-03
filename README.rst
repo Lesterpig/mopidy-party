@@ -6,7 +6,7 @@ Mopidy web extension designed for party! Let your guests manage the sound ;)
 
 - Minimal, fast web interface designed for mobile
 - Search soundtracks and add it to the queue
-- Skip current track (only if at least 1 min played from current track)
+- Skip current track after a configurable number of votes (defaults to 3)
 
 See this `blog entry <http://blog.lesterpig.com/post/build-a-connected-jukebox-from-a-raspberry-pi/>`_ for some details about this package.
 
@@ -31,6 +31,14 @@ For example, http://192.168.0.2:6680/
 
 Direct access to Mopidy Party would then be: http://192.168.0.2:6680/party/
 
+Configuration
+=============
+
+::
+    [party]
+    enabled = true
+    votes_to_skip = 3
+
 Project resources
 =================
 
@@ -41,9 +49,13 @@ Project resources
 Changelog
 =========
 
+v0.3.0 (2018-08-03)
+----------------------------------------
+- Add browse when search string is empty and on load (supports both mopidy-local and mopidy-local-sqlite backends, by juniormonkey)
+
 v0.2.0 (2017-01-08)
 ----------------------------------------
-- Added vote to skip (by RealityFork)
+- Add vote to skip (by RealityFork)
 
 v0.1.2 (2016-10-10)
 ----------------------------------------
