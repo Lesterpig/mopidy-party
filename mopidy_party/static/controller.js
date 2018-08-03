@@ -8,6 +8,8 @@ angular.module('partyApp', [])
 
   $scope.message = [];
   $scope.tracks  = [];
+  $scope.tracksToLookup = [];
+  $scope.maxTracksToLookupAtOnce = 50;
   $scope.loading = true;
   $scope.ready   = false;
   $scope.currentState = {
@@ -88,7 +90,7 @@ angular.module('partyApp', [])
 
     if(!$scope.searchField) {
       mopidy.library.browse({
-        'uri' : 'local:directory?type=track'
+        'uri' : 'local:directory'
       }).done($scope.handleBrowseResult);
       return;
     }
@@ -102,18 +104,39 @@ angular.module('partyApp', [])
 
     $scope.loading = false;
     $scope.tracks  = [];
+    $scope.tracksToLookup = [];
 
     for(var i = 0; i < res.length; i++){
-      if(res[i].type == 'track'){
-        mopidy.library.lookup({'uri' : res[i].uri}).done(function(tracklist){
-          for(var j = 0; j < tracklist.length; j++) {
-            $scope.addTrackResult(tracklist[j]);
-          }
-          $scope.$apply();
-        });
+      if(res[i].type == 'directory' && res[i].uri == 'local:directory?type=track'){
+        mopidy.library.browse({
+          'uri' : res[i].uri
+        }).done($scope.handleBrowseResult);
+      } else if(res[i].type == 'track'){
+        $scope.tracksToLookup.push(res[i]);
       }
     }
-    $scope.$apply();
+
+    if($scope.tracksToLookup) {
+      $scope.lookupOnePageOfTracks();
+    }
+  }
+
+  $scope.lookupOnePageOfTracks = function(){
+
+    var _index = 0;
+    while(_index < $scope.maxTracksToLookupAtOnce && $scope.tracksToLookup){
+
+      var track = $scope.tracksToLookup.shift();
+      if(track){
+        mopidy.library.lookup({'uri' : track.uri}).done(function(tracklist){
+        for(var j = 0; j < tracklist.length; j++){
+          $scope.addTrackResult(tracklist[j]);
+        }
+        $scope.$apply();
+        });
+      }
+      _index++;
+    }
   };
 
   $scope.handleSearchResult = function(res){
