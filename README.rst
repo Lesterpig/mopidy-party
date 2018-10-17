@@ -50,6 +50,10 @@ Project resources
 Changelog
 =========
 
+v0.3.1 (2018-10-17)
+----------------------------------------
+- Vendorize mopidy javascript for 3.0 upstream compatibility
+
 v0.3.0 (2018-08-03)
 ----------------------------------------
 - Add browse when search string is empty and on load (supports both mopidy-local and mopidy-local-sqlite backends, by juniormonkey)
