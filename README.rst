@@ -8,7 +8,7 @@ Mopidy web extension designed for party! Let your guests manage the sound ;)
 - Search soundtracks and add it to the queue
 - Skip current track after a configurable number of votes (defaults to 3)
 
-See this `blog entry <http://blog.lesterpig.com/post/build-a-connected-jukebox-from-a-raspberry-pi/>`_ for some details about this package.
+See this `blog entry <https://blog.lesterpig.com/post/build-a-connected-jukebox-from-a-raspberry-pi/>`_ for some details about this package.
 
 Installation
 ============
@@ -35,6 +35,7 @@ Configuration
 =============
 
 ::
+
     [party]
     enabled = true
     votes_to_skip = 3
