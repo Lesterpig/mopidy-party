@@ -33,15 +33,16 @@
         </div>
         <div class="col-8">
           <div class="card card-body bg-light">
-            {{ currentState.track.name }}
-            <small>
-              <span ng-if="currentState.track.artists">by</span>
-              <span ng-repeat="artist in currentState.track.artists">
-                <span ng-if="!$first"> & </span>
-                {{ artist.name }}
-              </span>
-            </small>
-            <small>{{ printDuration(currentState.track) }}</small>
+            <span>{{ currentState.track.name }}
+              <small>
+                <span ng-if="currentState.track.artists">by</span>
+                <span ng-repeat="artist in currentState.track.artists">
+                  <span ng-if="!$first"> & </span>
+                  {{ artist.name }}
+                </span>
+              </small>
+              <small>{{ printDuration(currentState.track) }}</small>
+            </span>
           </div>
         </div>
       </div>
