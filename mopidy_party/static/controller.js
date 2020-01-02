@@ -96,7 +96,9 @@ angular.module('partyApp', [])
     }
 
     mopidy.library.search({
-      'any' : [$scope.searchField]
+      'query': {
+        'any' : [$scope.searchField]
+      }
     }).done($scope.handleSearchResult);
   };
 

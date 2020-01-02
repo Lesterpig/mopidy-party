@@ -50,6 +50,10 @@ Project resources
 Changelog
 =========
 
+v0.4.0 (2020-01-02)
+----------------------------------------
+- Port to python3 and Mopidy 3 compatibility
+
 v0.3.1 (2018-10-17)
 ----------------------------------------
 - Vendorize mopidy javascript for 3.0 upstream compatibility

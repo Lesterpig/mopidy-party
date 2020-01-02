@@ -1,12 +1,10 @@
-from __future__ import absolute_import, unicode_literals
-
 import os
 
 import tornado.web
 
 from mopidy import config, ext
 
-__version__ = '0.3.1'
+__version__ = '0.4.0'
 
 
 class PartyRequestHandler(tornado.web.RequestHandler):
@@ -31,7 +29,7 @@ class PartyRequestHandler(tornado.web.RequestHandler):
         else: # Valid vote
             self.data["votes"].append(self.request.remote_ip)
             if (len(self.data["votes"]) == self.requiredVotes):
-                self.core.playback.next()
+                next(self.core.playback)
                 self.write("Skipping...")
             else:
                 self.write("You have voted to skip this song. ("+str(self.requiredVotes-len(self.data["votes"]))+" more votes needed)")
