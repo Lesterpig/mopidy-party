@@ -13,23 +13,23 @@ See this `blog entry <https://blog.lesterpig.com/post/build-a-connected-jukebox-
 Installation
 ============
 
-You must install `mopidy <https://www.mopidy.com/>`_ and some backends (soundcloud, spofity, youtube...).
+You must install `mopidy <https://www.mopidy.com/>`_ (version 3) and some backends (soundcloud, spotify, youtube...).
 
 **PROD:** you just have to install pip and then::
 
-    sudo pip install Mopidy-Party
+    sudo python3 -m pip install Mopidy-Party
 
 **DEV:** After cloning the repository, install by running::
 
-    sudo pip install -e .
+    sudo python3 -m pip install -e .
 
 Usage
 =====
 
-To use the interface, simply point your browser to your Mopidy instance's IP address at port 6680 to see all available web interfaces.
+To use the interface, simply use your browser to visit your Mopidy instance's IP at port 6680 to see all available web interfaces.
 For example, http://192.168.0.2:6680/
 
-Direct access to Mopidy Party would then be: http://192.168.0.2:6680/party/
+Direct access to Mopidy Party should then be: http://192.168.0.2:6680/party/
 
 Configuration
 =============
@@ -52,7 +52,7 @@ Changelog
 
 v1.0.0 (2020-01-03)
 ----------------------------------------
-- Port to python3 and Mopidy 3 compatibility
+- Port to python3 and Mopidy 3 (by girst)
 
 v0.3.1 (2018-10-17)
 ----------------------------------------
