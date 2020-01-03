@@ -1,12 +1,10 @@
-from __future__ import absolute_import, unicode_literals
-
 import os
 
 import tornado.web
 
 from mopidy import config, ext
 
-__version__ = '0.3.1'
+__version__ = '1.0.0'
 
 
 class PartyRequestHandler(tornado.web.RequestHandler):
