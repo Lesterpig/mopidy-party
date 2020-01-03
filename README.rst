@@ -50,7 +50,7 @@ Project resources
 Changelog
 =========
 
-v0.4.0 (2020-01-02)
+v1.0.0 (2020-01-03)
 ----------------------------------------
 - Port to python3 and Mopidy 3 compatibility
 
