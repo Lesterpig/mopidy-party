@@ -14,6 +14,9 @@ class PartyRequestHandler(tornado.web.RequestHandler):
         self.data = data
         self.requiredVotes = config["party"]["votes_to_skip"]
 
+    def _getip(self):
+        return self.request.headers.get("X-Forwarded-For", self.request.remote_ip)
+
     def get(self):
         currentTrack = self.core.playback.get_current_track().get()
         if (currentTrack == None): return
@@ -24,10 +27,10 @@ class PartyRequestHandler(tornado.web.RequestHandler):
             self.data["track"] = currentTrackURI
             self.data["votes"] = []
 
-        if (self.request.remote_ip in self.data["votes"]): # User has already voted
+        if (self._getip() in self.data["votes"]): # User has already voted
             self.write("You have already voted to skip this song =)")
         else: # Valid vote
-            self.data["votes"].append(self.request.remote_ip)
+            self.data["votes"].append(self._getip())
             if (len(self.data["votes"]) == self.requiredVotes):
                 self.core.playback.next()
                 self.write("Skipping...")
