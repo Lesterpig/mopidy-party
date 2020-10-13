@@ -62,8 +62,14 @@ class AddRequestHandler(tornado.web.RequestHandler):
         self.data["queue"].append(self._getip())
         self.data["queue"].pop(0)
 
+        pos = 0
+        if self.data["last"]:
+            queue = self.core.tracklist.index(self.data["last"]).get() or 0
+            current = self.core.tracklist.index().get() or 0
+            pos = max(queue, current) # after lastly enqueued and after current track
+
         try:
-            self.core.tracklist.add(uris=[track_uri])
+            self.data["last"] = self.core.tracklist.add(uris=[track_uri], at_position=pos+1).get()[0]
         except:
             self.write("Unable to add track, please try again...")
             self.set_status(400)
@@ -75,7 +81,7 @@ class AddRequestHandler(tornado.web.RequestHandler):
 
 
 def party_factory(config, core):
-    data = {'track':"", 'votes':[], 'queue': [None] * config["party"]["max_tracks"]}
+    data = {'track':"", 'votes':[], 'queue': [None] * config["party"]["max_tracks"], 'last':None}
     return [
     ('/vote', VoteRequestHandler, {'core': core, 'data':data, 'config':config}),
     ('/add', AddRequestHandler, {'core': core, 'data':data, 'config':config})
