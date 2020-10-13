@@ -7,7 +7,7 @@ from mopidy import config, ext
 __version__ = '1.0.0'
 
 
-class PartyRequestHandler(tornado.web.RequestHandler):
+class VoteRequestHandler(tornado.web.RequestHandler):
 
     def initialize(self, core, data, config):
         self.core = core
@@ -38,11 +38,47 @@ class PartyRequestHandler(tornado.web.RequestHandler):
                 self.write("You have voted to skip this song. ("+str(self.requiredVotes-len(self.data["votes"]))+" more votes needed)")
 
 
+class AddRequestHandler(tornado.web.RequestHandler):
+
+    def initialize(self, core, data, config):
+        self.core = core
+        self.data = data
+
+    def _getip(self):
+        return self.request.headers.get("X-Forwarded-For", self.request.remote_ip)
+
+    def post(self):
+        # when the last n tracks were added by the same user, abort.
+        if self.data["queue"] and all([e == self._getip() for e in self.data["queue"]]):
+            self.write("You have requested too many songs")
+            self.set_status(403)
+            return
+
+        track_uri = self.request.body.decode()
+        if not track_uri:
+            self.set_status(400)
+            return
+
+        self.data["queue"].append(self._getip())
+        self.data["queue"].pop(0)
+
+        try:
+            self.core.tracklist.add(uris=[track_uri])
+        except:
+            self.write("Unable to add track, please try again...")
+            self.set_status(400)
+            return
+
+        self.core.tracklist.set_consume(True)
+        if self.core.playback.get_state().get() == "stopped":
+            self.core.playback.play()
+
 
 def party_factory(config, core):
-    data = {'track':"", 'votes':[]}
+    data = {'track':"", 'votes':[], 'queue': [None] * config["party"]["max_tracks"]}
     return [
-    ('/vote', PartyRequestHandler, {'core': core, 'data':data, 'config':config})
+    ('/vote', VoteRequestHandler, {'core': core, 'data':data, 'config':config}),
+    ('/add', AddRequestHandler, {'core': core, 'data':data, 'config':config})
     ]
 
 
@@ -59,6 +95,7 @@ class Extension(ext.Extension):
     def get_config_schema(self):
         schema = super(Extension, self).get_config_schema()
         schema['votes_to_skip'] = config.Integer(minimum=0)
+        schema['max_tracks'] = config.Integer(minimum=0)
         return schema
 
     def setup(self, registry):
