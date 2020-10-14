@@ -39,6 +39,7 @@ Configuration
     [party]
     enabled = true
     votes_to_skip = 3
+    max_tracks = 0
 
 Project resources
 =================

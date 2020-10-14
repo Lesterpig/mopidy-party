@@ -182,33 +182,17 @@ angular.module('partyApp', [])
 
     track.disabled = true;
 
-    mopidy.tracklist
-    .index()
-    .then(function(index){
-      return mopidy.tracklist.add({uris: [track.uri]});
-    })
-    .then(function(){
-      // Notify user
-      $scope.message = ['success', 'Next track: ' + track.name];
-      $scope.$apply();
-      return mopidy.tracklist.setConsume([true]);
-    })
-    .then(function(){
-      return mopidy.playback.getState();
-    })
-    .then(function(state){
-      // Get current state
-      if(state !== 'stopped')
-        return;
-      // If stopped, start music NOW!
-      return mopidy.playback.play();
-    })
-    .catch(function(){
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.open( "POST", "/party/add", false ); // false for synchronous request
+    xmlHttp.send(track.uri);
+    var msgtype = 'success'
+    if (xmlHttp.status >= 400) {
       track.disabled = false;
-      $scope.message = ['error', 'Unable to add track, please try again...'];
-      $scope.$apply();
-    })
-    .done();
+      $scope.message = ['error', xmlHttp.responseText];
+    } else {
+      $scope.message = ['success', 'Next track: ' + track.name];
+    }
+    $scope.$apply();
   };
 
   $scope.nextTrack = function(){
