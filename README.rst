@@ -38,8 +38,8 @@ Configuration
 
     [party]
     enabled = true
-    votes_to_skip = 3
-    max_tracks = 0
+    votes_to_skip = 3  # Votes needed from different users to allow skipping a song.
+    max_tracks = 0     # Maximum number of tracks that can be added by a single user in a row. 0 to disable.
 
 Project resources
 =================
@@ -50,6 +50,13 @@ Project resources
 
 Changelog
 =========
+
+v1.1.0 (2022-10-12)
+----------------------------------------
+- Use IP from X-Forwarded-For header if available (by girst) 
+- Limit maximum number of tracks per user in a row (by girst)
+- Allows fallback tracks (added by other mopidy frontends) (by girst)
+- Dark mode (by girst)
 
 v1.0.0 (2020-01-03)
 ----------------------------------------
