@@ -4,8 +4,6 @@ import tornado.web
 
 from mopidy import config, ext
 
-import pathlib
-
 __version__ = '1.1.0'
 
 
