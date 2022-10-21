@@ -40,9 +40,9 @@ Configuration
     enabled = true
     votes_to_skip = 3  # Votes needed from different users to allow skipping a song.
     max_tracks = 0     # Maximum number of tracks that can be added by a single user in a row. 0 to disable.
-	hide_pause = false # Change to true to hide the pause button
-	hide_skip = false  # Change to true to hide the skip button 
-	style = dark.css   # Stylesheet to use. Also embedded is original.css (light theme)
+    hide_pause = false # Change to true to hide the pause button
+    hide_skip = false  # Change to true to hide the skip button 
+    style = dark.css   # Stylesheet to use. Also embedded is original.css (light theme)
 
 Project resources
 =================
