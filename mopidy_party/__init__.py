@@ -4,6 +4,8 @@ import tornado.web
 
 from mopidy import config, ext
 
+import pathlib
+
 __version__ = '1.1.0'
 
 
@@ -80,9 +82,25 @@ class AddRequestHandler(tornado.web.RequestHandler):
             self.core.playback.play()
 
 
+class IndexHandler(tornado.web.RequestHandler):
+    def initialize(self, config):
+        self.__dict = {}
+		# Make the configuration from mopidy.conf [party] section available as variables in index.html
+        for conf_key, value in config["party"].items():
+            if conf_key != 'enabled':
+                self.__dict[conf_key] = value
+
+    def get(self):
+        return self.render('static/index.html', **self.__dict)
+    
+
 def party_factory(config, core):
+    from tornado.web import RedirectHandler
     data = {'track':"", 'votes':[], 'queue': [None] * config["party"]["max_tracks"], 'last':None}
+    
     return [
+    ('/', RedirectHandler, {'url': 'index.html'}), #always redirect from extension root to the html
+    ('/index.html', IndexHandler, {'config': config }),
     ('/vote', VoteRequestHandler, {'core': core, 'data':data, 'config':config}),
     ('/add', AddRequestHandler, {'core': core, 'data':data, 'config':config})
     ]
@@ -102,6 +120,9 @@ class Extension(ext.Extension):
         schema = super(Extension, self).get_config_schema()
         schema['votes_to_skip'] = config.Integer(minimum=0)
         schema['max_tracks'] = config.Integer(minimum=0)
+        schema['hide_pause'] = config.Boolean(optional=True)
+        schema['hide_skip'] = config.Boolean(optional=True)
+        schema['style'] = config.String()
         return schema
 
     def setup(self, registry):
