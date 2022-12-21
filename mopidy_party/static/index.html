@@ -9,7 +9,7 @@
 
     <link href="vendors/bootstrap.min.css" rel="stylesheet">
     <link href="vendors/fontawesome-all.min.css" rel="stylesheet">
-    <link href="style.css" rel="stylesheet">
+    <link href="{{ style }}" rel="stylesheet">
 
     <script type="text/javascript" src="vendors/mopidy.min.js"></script>
     <script type="text/javascript" src="vendors/angular.min.js"></script>
@@ -19,29 +19,33 @@
     <div class="container-fluid" style="margin-top:20px">
       <div class="row">
         <div class="col-4">
+         {% if not hide_pause %}
           <button type="button" class="btn" ng-model="button" ng-click="togglePause()" ng-disabled="!ready || currentState.length === 0" ng-class="{'btn-success' : currentState.paused, 'btn-danger': !currentState.paused}">
             <span class="fas fa-pause" ng-class="{'fa-play': currentState.paused, 'fa-pause' : !currentState.paused}"></span>
           </button>
+		 {% end %}
+         {% if not hide_skip %}
           <button type="button" class="btn btn-primary" ng-model="button" ng-click="nextTrack()" ng-disabled="!ready || currentState.length === 0">
             <span class="fas fa-step-forward"></span>
           </button>
+		 {% end %}
           <p><small>
             <span class="fas fa-music" ng-if="currentState.length > 0"></span>
             <span class="fas fa-exclamation-triangle" ng-if="currentState.length === 0"></span>
-            {{ currentState.length }} track{{ currentState.length > 1 ? 's' : '' }}
+            {{! currentState.length }} track{{! currentState.length != 1 ? 's' : '' }}
           </small></p>
         </div>
         <div class="col-8">
           <div class="card card-body bg-light">
-            <span>{{ currentState.track.name }}
+            <span>{{! currentState.track.name }}
               <small>
                 <span ng-if="currentState.track.artists">by</span>
                 <span ng-repeat="artist in currentState.track.artists">
                   <span ng-if="!$first"> & </span>
-                  {{ artist.name }}
+                  {{! artist.name }}
                 </span>
               </small>
-              <small>{{ printDuration(currentState.track) }}</small>
+              <small>{{! printDuration(currentState.track) }}</small>
             </span>
           </div>
         </div>
@@ -58,7 +62,7 @@
       </div>
 
       <div class="alert" role="alert" ng-show="message.length" ng-class="{'alert-success' : (message[0] == 'success'), 'alert-danger' : (message[0] == 'error')}">
-        {{ message[1] }}
+        {{! message[1] }}
       </div>
 
       <ul class="list-group" style="margin-top:20px">
@@ -67,13 +71,13 @@
             <span class="fas fa-play" ng-if="!track.disabled"></span>
             <span class="fas fa-check" ng-if="track.disabled"></span>
           </button>
-          {{ track.name }} <small>{{ printDuration(track) }}</small><br>
+          {{! track.name }} <small>{{! printDuration(track) }}</small><br>
           <small>
-            {{ track.album.name }}
+            {{! track.album.name }}
             <span ng-if="track.artists">by</span>
             <span ng-repeat="artist in track.artists">
               <span ng-if="!$first"> & </span>
-              {{ artist.name }}
+              {{! artist.name }}
             </span>
           </small>
         </li>
