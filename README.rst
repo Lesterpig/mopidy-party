@@ -54,6 +54,11 @@ Project resources
 Changelog
 =========
 
+v1.2.0 (2022-12-21)
+----------------------------------------
+- Add hide_pause, hide_skip, style config options (by girst)
+- Provide two default styles (dark and original)
+
 v1.1.0 (2022-10-12)
 ----------------------------------------
 - Use IP from X-Forwarded-For header if available (by girst) 
