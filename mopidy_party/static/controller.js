@@ -77,12 +77,7 @@ angular.module('partyApp', [])
 
     return '(' + _min + ':' + (_sec < 10 ? '0' + _sec : _sec) + ')' ;
   };
-
-  $scope.togglePause = function(){
-    var _fn = $scope.currentState.paused ? mopidy.playback.resume : mopidy.playback.pause;
-    _fn().done();
-  };
-
+  
   $scope.search = function(){
 
     $scope.message = [];
@@ -202,4 +197,32 @@ angular.module('partyApp', [])
     $scope.message = ['success', xmlHttp.responseText];
     $scope.$apply();
   };
+  
+  $scope.getTrackSource = function(track){
+	  var sourceAsText = "unknown";
+	  if (track.uri) {
+		  sourceAsText = track.uri.split(":", "1")[0];
+	  }
+	  return sourceAsText;
+  };
+  
+    
+  $scope.getFontAwesomeIcon = function(source){
+      var sources_with_fa_icon = ["bandcamp", "mixcloud", "soundcloud", "spotify", "youtube"];
+	  var css_class =  "fa fa-music";
+	  if (source == "local") {
+		  css_class = "fa fa-folder";
+	  } else if (sources_with_fa_icon.includes(source)) {
+		  css_class = "fa-brands fa-"+source;
+	  }
+	  return css_class;
+  };
+
+
+  $scope.togglePause = function(){
+    var _fn = $scope.currentState.paused ? mopidy.playback.resume : mopidy.playback.pause;
+    _fn().done();
+  };
+
+
 });
