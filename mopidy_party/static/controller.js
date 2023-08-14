@@ -199,23 +199,23 @@ angular.module('partyApp', [])
   };
   
   $scope.getTrackSource = function(track){
-	  var sourceAsText = "unknown";
-	  if (track.uri) {
-		  sourceAsText = track.uri.split(":", "1")[0];
-	  }
-	  return sourceAsText;
+    var sourceAsText = "unknown";
+    if (track.uri) {
+      sourceAsText = track.uri.split(":", "1")[0];
+    }
+    return sourceAsText;
   };
   
     
   $scope.getFontAwesomeIcon = function(source){
-      var sources_with_fa_icon = ["bandcamp", "mixcloud", "soundcloud", "spotify", "youtube"];
-	  var css_class =  "fa fa-music";
-	  if (source == "local") {
-		  css_class = "fa fa-folder";
-	  } else if (sources_with_fa_icon.includes(source)) {
-		  css_class = "fa-brands fa-"+source;
-	  }
-	  return css_class;
+    var sources_with_fa_icon = ["bandcamp", "mixcloud", "soundcloud", "spotify", "youtube"];
+    var css_class =  "fa fa-music";
+    if (source == "local") {
+      css_class = "fa fa-folder";
+    } else if (sources_with_fa_icon.includes(source)) {
+      css_class = "fa-brands fa-"+source;
+    }
+    return css_class;
   };
 
 
