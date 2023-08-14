@@ -54,6 +54,11 @@ Project resources
 Changelog
 =========
 
+v1.2.1 (2023-08-14)
+----------------------------------------
+- Add music source name and icon in search results (by grasdk)
+- Bump fontawesome version
+
 v1.2.0 (2022-12-21)
 ----------------------------------------
 - Add hide_pause, hide_skip, style config options (by grasdk)

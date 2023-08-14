@@ -4,7 +4,7 @@ import tornado.web
 
 from mopidy import config, ext
 
-__version__ = '1.2.0'
+__version__ = '1.2.1'
 
 
 class VoteRequestHandler(tornado.web.RequestHandler):
