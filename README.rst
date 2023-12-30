@@ -43,7 +43,7 @@ Configuration
     hide_pause = false # Change to true to hide the pause button
     hide_skip = false  # Change to true to hide the skip button 
     style = dark.css   # Stylesheet to use. Also embedded is original.css (light theme)
-	max_results = 50   # Maximum number of tracks to show when searching / browsing on a single page
+    max_results = 50   # Maximum number of tracks to show when searching / browsing on a single page
 
 Project resources
 =================
@@ -56,10 +56,9 @@ Project resources
 Developer information
 =====================
 
-The RequestHandler 'config' makes `mopidy.conf` `[party]` configuration available via `http GET` requests. Useful if you want to make aspects of the controller configurable.
+The RequestHandler 'config' makes ``mopidy.conf``'s section for the ``[party]`` configuration available via ``http GET`` requests. Useful if you want to make aspects of the controller configurable.
 
-Example: The controller uses the below request, to read the `mopidy.conf` `[party]` section's `max_results` value.
-.. code-block:: javascript
+Example: The controller uses the below request, to read the ``max_results`` value.::
 
 $http.get('/party/config?key=max_results')
  
