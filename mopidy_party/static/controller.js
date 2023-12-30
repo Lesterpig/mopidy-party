@@ -2,7 +2,7 @@
 
 // TODO : add a mopidy service designed for angular, to avoid ugly $scope.$apply()...
 angular.module('partyApp', [])
-  .controller('MainController', function($scope, $http) {
+  .controller('MainController', function($scope, $http, $timeout) {
 
   // Scope variables
   $scope.message = [];
@@ -118,12 +118,17 @@ angular.module('partyApp', [])
         $scope.tracksToLookup.push(res[i].uri);
       }
     }
-    if($scope.tracksToLookup) {
-      $scope.lookupOnePageOfTracks();
-    }
+	$scope.$apply();
+	$timeout(function() {
+		if($scope.tracksToLookup) {
+			$scope.lookupOnePageOfTracks();
+		}
+	}, 0);
   }
 
   $scope.lookupOnePageOfTracks = function(){
+	//wrap in timeout to avoid nested $apply problems
+    $timeout(function() {
 	//the splice function returns and removes the elements from the list of tracks to show in one page
 	mopidy.library.lookup({'uris' : $scope.tracksToLookup.splice(0, $scope.maxTracksToLookupAtOnce)}).done(function(tracklistResult){
 		//mopidy.library.lookup delivers a JSON object, we unwrap it with Object.values() into an array.
@@ -133,8 +138,9 @@ angular.module('partyApp', [])
 		for(var j = 0; j < browseTracklist.length; j++){
           $scope.addTrackResult(browseTracklist[j]);
         }
-        $scope.$apply();
     });
+    //$scope.$apply();
+	}, 0);
   };
 
 
@@ -142,6 +148,7 @@ angular.module('partyApp', [])
 
     $scope.loading = false;
     $scope.tracks  = [];
+	$scope.tracksToLookup = [];
 
     var _index = 0;
     var _found = true;
@@ -155,7 +162,6 @@ angular.module('partyApp', [])
       }
       _index++;
     }
-
     $scope.$apply();
   };
 
@@ -169,33 +175,53 @@ angular.module('partyApp', [])
             if ($scope.tracks[i].uri == matches[0].track.uri)
               $scope.tracks[i].disabled = true;
           }
-          $scope.$apply();
         }
       });
+    $scope.$apply();
   };
 
   $scope.addTrack = function(track){
     track.disabled = true;
 
-    var xmlHttp = new XMLHttpRequest();
-    xmlHttp.open( "POST", "/party/add", false ); // false for synchronous request
-    xmlHttp.send(track.uri);
-    var msgtype = 'success'
-    if (xmlHttp.status >= 400) {
-      track.disabled = false;
-      $scope.message = ['error', xmlHttp.responseText];
-    } else {
-      $scope.message = ['success', 'Queued: ' + track.name];
-    }
-    $scope.$apply();
+	$http.post('/party/add', track.uri).then(
+		function success(response){
+			$timeout(function() {
+				if (response.status < 400) {
+					$scope.message = ['success', 'Queued: ' + track.name];
+				} else {
+					$scope.message = ['success', 'Queued: ' + track.name + ' - ' + response.data];
+				}
+				//$scope.$apply();
+			}, 0);
+		}, 
+		function error(response){
+			$timeout(function() {
+				if (response.status === 409) {
+					$scope.message = ['error', '' + response.data];
+				} else {
+					$scope.message = ['error', 'Code ' + response.status + ' - ' + response.data];
+				}
+				//$scope.$apply();
+			}, 0);
+		} 
+	);
   };
 
   $scope.nextTrack = function(){
-    var xmlHttp = new XMLHttpRequest();
-    xmlHttp.open( "GET", "/party/vote", false ); // false for synchronous request
-    xmlHttp.send( null );
-    $scope.message = ['success', xmlHttp.responseText];
-    $scope.$apply();
+    $http.get('/party/vote').then(
+		function success(response){
+			$timeout(function() {
+				$scope.message = ['success', '' + response.data];
+				//$scope.$apply();
+			}, 0);
+		}, 
+		function error(response){
+			$timeout(function() {
+				$scope.message = ['error', '' + response.data];
+				//$scope.$apply();
+			}, 0);
+		} 
+	);
   };
   
   $scope.getTrackSource = function(track){

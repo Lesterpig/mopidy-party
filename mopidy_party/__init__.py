@@ -43,6 +43,7 @@ class AddRequestHandler(tornado.web.RequestHandler):
     def initialize(self, core, data, config):
         self.core = core
         self.data = data
+        self.maxQueueLength = config["party"]["max_queue_length"]
 
     def _getip(self):
         return self.request.headers.get("X-Forwarded-For", self.request.remote_ip)
@@ -51,7 +52,7 @@ class AddRequestHandler(tornado.web.RequestHandler):
         # when the last n tracks were added by the same user, abort.
         if self.data["queue"] and all([e == self._getip() for e in self.data["queue"]]):
             self.write("You have requested too many songs")
-            self.set_status(403)
+            self.set_status(409)
             return
 
         track_uri = self.request.body.decode()
@@ -67,12 +68,16 @@ class AddRequestHandler(tornado.web.RequestHandler):
             queue = self.core.tracklist.index(self.data["last"]).get() or 0
             current = self.core.tracklist.index().get() or 0
             pos = max(queue, current) # after lastly enqueued and after current track
+            if (self.maxQueueLength > 0) and (pos > self.maxQueueLength): 
+                self.write("Queue at max length, try again later.")
+                self.set_status(409)
+                return
 
         try:
             self.data["last"] = self.core.tracklist.add(uris=[track_uri], at_position=pos+1).get()[0]
-        except:
-            self.write("Unable to add track, please try again...")
-            self.set_status(400)
+        except Exception as e:
+            self.write("Unable to add track. Internal Server Error: "+repr(e))
+            self.set_status(500)
             return
 
         self.core.tracklist.set_consume(True)
@@ -145,6 +150,7 @@ class Extension(ext.Extension):
         schema['hide_skip'] = config.Boolean(optional=True)
         schema['style'] = config.String()
         schema['max_results'] = config.Integer(minimum=0)
+        schema['max_queue_length'] = config.Integer(minimum=0)
         return schema
 
     def setup(self, registry):
