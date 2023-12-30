@@ -2,13 +2,13 @@
 
 // TODO : add a mopidy service designed for angular, to avoid ugly $scope.$apply()...
 angular.module('partyApp', [])
-  .controller('MainController', function($scope) {
+  .controller('MainController', function($scope, $http) {
 
   // Scope variables
   $scope.message = [];
   $scope.tracks  = [];
   $scope.tracksToLookup = [];
-  $scope.maxTracksToLookupAtOnce = 50;
+  $scope.maxTracksToLookupAtOnce = 50; //note: will be overwritten by config value
   $scope.loading = true;
   $scope.ready   = false;
   $scope.currentState = {
@@ -19,6 +19,14 @@ angular.module('partyApp', [])
       name   : 'Nothing playing, add some songs to get the party going!'
     }
   };
+
+  //Get the max tracks to lookup at once from the "max_results" config value in mopidy.conf
+  $http.get('/party/config?key=max_results').then(function success(response){
+	if (response.status == 200) {
+		$scope.maxTracksToLookupAtOnce = response.data;
+	}
+  }, null);
+
 
   // Initialize
 
@@ -116,7 +124,8 @@ angular.module('partyApp', [])
   }
 
   $scope.lookupOnePageOfTracks = function(){
-	mopidy.library.lookup({'uris' : $scope.tracksToLookup.slice(0, $scope.maxTracksToLookupAtOnce)}).done(function(tracklistResult){
+	//the splice function returns and removes the elements from the list of tracks to show in one page
+	mopidy.library.lookup({'uris' : $scope.tracksToLookup.splice(0, $scope.maxTracksToLookupAtOnce)}).done(function(tracklistResult){
 		//mopidy.library.lookup delivers a JSON object, we unwrap it with Object.values() into an array.
 		//Each result is an array in itself, where the first (0'th) element is a track object, so we convert the result array using a 
 		//simple lambda function that converts each result to the track-part only (0'th element).
