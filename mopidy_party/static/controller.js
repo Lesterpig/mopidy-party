@@ -5,7 +5,6 @@ angular.module('partyApp', [])
   .controller('MainController', function($scope) {
 
   // Scope variables
-
   $scope.message = [];
   $scope.tracks  = [];
   $scope.tracksToLookup = [];
@@ -65,7 +64,7 @@ angular.module('partyApp', [])
       $scope.$apply();
     });
   });
-
+  
   $scope.printDuration = function(track){
 
     if(!track.length)
@@ -98,7 +97,6 @@ angular.module('partyApp', [])
   };
 
   $scope.handleBrowseResult = function(res){
-
     $scope.loading = false;
     $scope.tracks  = [];
     $scope.tracksToLookup = [];
@@ -109,32 +107,27 @@ angular.module('partyApp', [])
           'uri' : res[i].uri
         }).done($scope.handleBrowseResult);
       } else if(res[i].type == 'track'){
-        $scope.tracksToLookup.push(res[i]);
+        $scope.tracksToLookup.push(res[i].uri);
       }
     }
-
     if($scope.tracksToLookup) {
       $scope.lookupOnePageOfTracks();
     }
   }
 
   $scope.lookupOnePageOfTracks = function(){
-
-    var _index = 0;
-    while(_index < $scope.maxTracksToLookupAtOnce && $scope.tracksToLookup){
-
-      var track = $scope.tracksToLookup.shift();
-      if(track){
-        mopidy.library.lookup({'uri' : track.uri}).done(function(tracklist){
-        for(var j = 0; j < tracklist.length; j++){
-          $scope.addTrackResult(tracklist[j]);
+	mopidy.library.lookup({'uris' : $scope.tracksToLookup.slice(0, $scope.maxTracksToLookupAtOnce)}).done(function(tracklistResult){
+		//mopidy.library.lookup delivers a JSON object, we unwrap it with Object.values() into an array.
+		//Each result is an array in itself, where the first (0'th) element is a track object, so we convert the result array using a 
+		//simple lambda function that converts each result to the track-part only (0'th element).
+		var browseTracklist = Object.values(tracklistResult).map((singleTrackResult) => singleTrackResult[0]);
+		for(var j = 0; j < browseTracklist.length; j++){
+          $scope.addTrackResult(browseTracklist[j]);
         }
         $scope.$apply();
-        });
-      }
-      _index++;
-    }
+    });
   };
+
 
   $scope.handleSearchResult = function(res){
 
@@ -158,9 +151,8 @@ angular.module('partyApp', [])
   };
 
   $scope.addTrackResult = function(track){
-
     $scope.tracks.push(track);
-    mopidy.tracklist.filter({'uri': [track.uri]}).done(
+	mopidy.tracklist.filter([{'uri': [track.uri]}]).done(
       function(matches){
         if (matches.length) {
           for (var i = 0; i < $scope.tracks.length; i++)
@@ -174,7 +166,6 @@ angular.module('partyApp', [])
   };
 
   $scope.addTrack = function(track){
-
     track.disabled = true;
 
     var xmlHttp = new XMLHttpRequest();
@@ -185,7 +176,7 @@ angular.module('partyApp', [])
       track.disabled = false;
       $scope.message = ['error', xmlHttp.responseText];
     } else {
-      $scope.message = ['success', 'Next track: ' + track.name];
+      $scope.message = ['success', 'Queued: ' + track.name];
     }
     $scope.$apply();
   };
@@ -223,6 +214,5 @@ angular.module('partyApp', [])
     var _fn = $scope.currentState.paused ? mopidy.playback.resume : mopidy.playback.pause;
     _fn().done();
   };
-
 
 });
