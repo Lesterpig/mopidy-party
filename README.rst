@@ -61,9 +61,10 @@ The RequestHandler 'config' makes ``mopidy.conf``'s section for the ``[party]`` 
 
 Example: The controller uses the below request, to read the ``max_results`` value.::
 
-```
-$http.get('/party/config?key=max_results')
-```
+::
+
+    $http.get('/party/config?key=max_results')
+
 
 Changelog
 =========
