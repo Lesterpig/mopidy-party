@@ -38,11 +38,13 @@ Configuration
 
     [party]
     enabled = true
-    votes_to_skip = 3  # Votes needed from different users to allow skipping a song.
-    max_tracks = 0     # Maximum number of tracks that can be added by a single user in a row. 0 to disable.
-    hide_pause = false # Change to true to hide the pause button
-    hide_skip = false  # Change to true to hide the skip button 
-    style = dark.css   # Stylesheet to use. Also embedded is original.css (light theme)
+    votes_to_skip = 3     # Votes needed from different users to allow skipping a song.
+    max_tracks = 0        # Maximum number of tracks that can be added by a single user in a row, 0 for unlimited
+    max_results = 50      # Maximum number of tracks to show when searching / browsing on a single page
+    max_queue_length = 0  # Maximum number of tracks queued at the same time, 0 for unlimited
+    hide_pause = false    # Change to true to hide the pause button
+    hide_skip = false     # Change to true to hide the skip button
+    style = dark.css      # Stylesheet to use. Also embedded is original.css (light theme)
 
 Project resources
 =================
@@ -51,8 +53,24 @@ Project resources
 - `Issue tracker <https://github.com/Lesterpig/mopidy-party/issues>`_
 - `Development branch tarball <https://github.com/Lesterpig/mopidy-party/archive/master.tar.gz#egg=Mopidy-Party-dev>`_
 
+
+Developer information
+=====================
+
+The RequestHandler 'config' makes ``mopidy.conf``'s section for the ``[party]`` configuration available via ``http GET`` requests. Useful if you want to make aspects of the controller configurable.
+
+Example: The controller uses the below request, to read the ``max_results`` value.::
+
+```
+$http.get('/party/config?key=max_results')
+```
+
 Changelog
 =========
+
+v1.2.2 (2024-03-09)
+----------------------------------------
+- Add max_queue_length, max_results config options (by grasdk)
 
 v1.2.1 (2023-08-14)
 ----------------------------------------
@@ -66,7 +84,7 @@ v1.2.0 (2022-12-21)
 
 v1.1.0 (2022-10-12)
 ----------------------------------------
-- Use IP from X-Forwarded-For header if available (by girst) 
+- Use IP from X-Forwarded-For header if available (by girst)
 - Limit maximum number of tracks per user in a row (by girst)
 - Allows fallback tracks (added by other mopidy frontends) (by girst)
 - Dark mode (by girst)
