@@ -52,6 +52,8 @@ Configuration
       youtube
     source_blacklist = cd # Blacklist sources you don't want mopidy-party to search. No need to disable the
       file                # plugins. One source per line.
+    autosubmit_time = 0   # Time (seconds) to wait before automatically submitting a search query. 0 for manual submit only.
+    play_on_queue = true  # If nothing is playing, automatically start playing, when a track is queued.
 
 Project resources
 =================

@@ -2,10 +2,13 @@
 
 // TODO : add a mopidy service designed for angular, to avoid ugly $scope.$apply()...
 angular.module('partyApp', [])
-  .controller('MainController', function ($scope, $http) {
+  .controller('MainController', function ($scope, $http, $timeout, $window) {
 
     // Scope variables
     $scope.message = [];
+    let messageTimer = null;
+    $scope.messageFadingOut = false;
+    $scope.messagePosition = { top: '30px', left: '5px' };
     $scope.tracks = [];
     $scope.tracksToLookup = [];
     $scope.maxTracksToLookup = 50; // Will be overwritten later by module config
@@ -13,7 +16,11 @@ angular.module('partyApp', [])
     $scope.maxSongLengthMS = 0; //0 No limit. May be overwritten by module config
     $scope.searching = false;
     $scope.searchingSources = [];
+    $scope.submitSymbol = '↵';
     $scope.ready = false;
+    $scope.autosubmitTime = 0; //0 No autosubmit. May be overwritten by module config
+    let countdownInterval;
+    let countdownTime;
     $scope.currentState = {
       paused: false,
       length: 0,
@@ -40,17 +47,33 @@ angular.module('partyApp', [])
       }
     }, null);
 
+    function parseConfigList(data) {
+      return String(data || '')
+        .replace(/^['"]|['"]$/g, '')
+        .replace(/\\n/g, '\n')
+        .split(/\r?\n/)
+        .map(s => s.trim())
+        .filter(s => s && !s.startsWith('#'));
+    }
+
     // Get the source priority list
     $http.get('/party/config?key=source_prio').then(function success (response) {
       if (response.status == 200) {
-        $scope.sources_priority = [...data.matchAll(/\w+/g)].map(x => x[0]);
+        $scope.sources_priority = parseConfigList(response.data);
       }
     }, null);
     // Get the source blacklist
     $http.get('/party/config?key=source_blacklist').then(function success (response) {
       if (response.status == 200) {
-        $scope.sources_blacklist = [...data.matchAll(/\w+/g)].map(x => x[0]);
+        $scope.sources_blacklist = parseConfigList(response.data);
       }
+    }, null);
+
+    // Get the autosubmit time
+    $http.get('/party/config?key=autosubmit_time').then(function success (response) {
+      if (response.status == 200) {
+        $scope.autosubmitTime = response.data;
+      } 
     }, null);
 
     var mopidy = new Mopidy({
@@ -119,6 +142,9 @@ angular.module('partyApp', [])
     };
 
     $scope.search = function () {
+      if ($scope.autosubmitTime > 0) {
+        cancelCountdown();
+      }
       $scope.message = [];
       $scope.tracks = [];
       $scope.tracksToLookup = [];
@@ -130,6 +156,17 @@ angular.module('partyApp', [])
         $scope.searchSourcesInOrder();
       }
     };
+
+    //Autosubmit with countdown
+    $scope.$watch('searchField', function(newVal, oldVal) {
+      if ($scope.autosubmitTime > 0) {     
+        if (newVal !== oldVal) {
+          cancelCountdown(); // Reset previous timeouts
+          countdownTime = $scope.autosubmitTime;
+          startCountdown();
+        }
+      }
+    });
 
     $scope.browse = function () {
         mopidy.library.browse({
@@ -161,7 +198,10 @@ angular.module('partyApp', [])
 
     $scope.lookupOnePageOfTracks = function () {
       mopidy.library.lookup({ 'uris': $scope.tracksToLookup.splice(0, $scope.maxTracksToLookup) }).done(function (tracklistResult) {
-        Object.values(tracklistResult).map(function (singleTrackResult) { return singleTrackResult[0]; }).forEach($scope.addTrackResult);
+        var tracks = Object.values(tracklistResult).reduce(function (allTracks, singleTrackResult) {
+          return allTracks.concat(singleTrackResult || []);
+        }, []);
+        $scope.addTrackResults(tracks);
       });
     };
 
@@ -194,17 +234,7 @@ angular.module('partyApp', [])
       }
       for (var i = 0; i < res.length; i++) {
         if (res[i].tracks) {
-          for (var j = 0; j < res[i].tracks.length; j++) {
-            if (res[i].tracks[j]) {
-              if ($scope.maxSongLengthMS <= 0 || res[i].tracks[j].length <= $scope.maxSongLengthMS) {
-                $scope.addTrackResult(res[i].tracks[j]);
-                _index++;
-                if (_index >= $scope.maxTracksToLookup) {
-                  break;
-                }
-              }
-            }
-          }
+          _index += $scope.addTrackResults(res[i].tracks);
         }
         if (_index >= $scope.maxTracksToLookup) {
           break;
@@ -216,44 +246,57 @@ angular.module('partyApp', [])
       $scope.$apply();
     };
 
-    $scope.addTrackResult = function (track) {
-      $scope.tracks.push(track);
-      mopidy.tracklist.filter([{ 'uri': [track.uri] }]).done(
+    $scope.addTrackResults = function (tracks) {
+      let uris = [];
+      tracks.forEach(function(track) {
+        if ($scope.maxSongLengthMS <= 0 || track.length <= $scope.maxSongLengthMS) {
+          $scope.tracks.push(track);
+          uris.push(track.uri);
+        }
+      });
+      mopidy.tracklist.filter([{ 'uri': uris }]).done(
         function (matches) {
-          if (matches.length) {
-            for (var i = 0; i < $scope.tracks.length; i++) {
-              if ($scope.tracks[i].uri == matches[0].track.uri)
-                $scope.tracks[i].disabled = true;
-            }
+          if (matches && matches.length) {
+            $scope.$apply(function() {
+              const matchedUris = new Set(matches.map(m => m.track.uri));
+              $scope.tracks.forEach(function(track) {
+                if (matchedUris.has(track.uri)) {
+                  track.disabled = true;
+                }
+              });
+            });
           }
-          $scope.$apply();
-        });
+        }
+      );
+      
+      $scope.$apply();
+      return uris.length; //Return the number of tracks added to the list
     };
 
-    $scope.addTrack = function (track) {
+    $scope.addTrack = function (track, event) {
       track.disabled = true;
 
       $http.post('/party/add', track.uri).then(
         function success(response) {
-          $scope.message = ['success', 'Queued: ' + track.name];
+          $scope.setMessage('success', 'Queued: ' + track.name, event);
         },
         function error(response) {
           if (response.status === 409) {
-            $scope.message = ['error', '' + response.data];
+            $scope.setMessage('error', '' + response.data, event);
           } else {
-            $scope.message = ['error', 'Code ' + response.status + ' - ' + response.data];
+            $scope.setMessage('error', 'Code ' + response.status + ' - ' + response.data, event);
           }
         }
       );
     };
 
-    $scope.nextTrack = function () {
+    $scope.nextTrack = function (event) {
       $http.get('/party/vote').then(
         function success(response) {
-          $scope.message = ['success', '' + response.data];
+          $scope.setMessage('success', '' + response.data, event);
         },
         function error(response) {
-          $scope.message = ['error', '' + response.data];
+          $scope.setMessage('error', '' + response.data, event);
         }
       );
     };
@@ -284,6 +327,88 @@ angular.module('partyApp', [])
       var _fn = $scope.currentState.paused ? mopidy.playback.resume : mopidy.playback.pause;
       _fn().done();
     };
+
+    //CONTROL PANEL STYLE START
+    function adjustBodyPadding() {
+      var controlPanel = document.getElementById('controlpanel');
+      if (controlPanel) {
+        document.body.style.paddingTop = controlPanel.offsetHeight + 'px';
+      }
+    }
+    $timeout(adjustBodyPadding);
+    angular.element($window).on('resize', adjustBodyPadding);
+    $scope.$on('$destroy', function () {
+      angular.element($window).off('resize', adjustBodyPadding);
+    });
+    //CONSTROL PANEL STYLE END
+
+    //MESSAGE STYLE START
+    $scope.setMessage = function(type, text, event) {
+      $scope.message = [type, text];
+      $scope.messageFadingOut = false;
+
+      if (event && event.clientX !== undefined && event.clientY !== undefined) {
+        var maxLeft = Math.max(10, $window.innerWidth - 260);
+        var maxTop = Math.max(10, $window.innerHeight - 120);
+        $scope.messagePosition = {
+          top: Math.min(event.clientY, maxTop) + 'px',
+          left: Math.min(event.clientX, maxLeft) + 'px'
+        };
+      } else {
+        $scope.messagePosition = { top: '30px', left: '5px' };
+      }
+
+      if (type === 'error') {
+        console.error('Error:', text);
+      }
+
+      if (messageTimer) {
+        $timeout.cancel(messageTimer);
+      }
+
+      messageTimer = $timeout(function() {
+        $scope.messageFadingOut = true;
+
+        $timeout(function() {
+          $scope.message = [];
+          $scope.messageFadingOut = false;
+          messageTimer = null;
+        }, 500); // match fade-out time in CSS
+      }, 5000);
+    };
+
+    $scope.closeMessage = function () {
+      if (messageTimer) {
+        $timeout.cancel(messageTimer);
+        messageTimer = null;
+      }
+      $scope.message = [];
+      $scope.messageFadingOut = false;
+    };
+    //MESSAGE STYLE END
+
+    //SEARCH COUNTDOWN START
+    function startCountdown() {
+      $scope.submitSymbol = countdownTime.toString();
+      countdownInterval = $timeout(function tick() {
+        countdownTime--;
+        if (countdownTime > 0) {
+          $scope.submitSymbol = countdownTime.toString();
+          countdownInterval = $timeout(tick, 1000);
+        } else {
+          $scope.search();
+          $scope.submitSymbol = '↵';
+        }
+      }, 1000);
+    }
+
+    function cancelCountdown() {
+      $timeout.cancel(countdownInterval);
+      countdownTime = $scope.autosubmitTime;
+      $scope.submitSymbol = '↵';
+    }
+    //SEARCH COUNTDOWN END
+
   });
 
 function getPrioritizedSources (availablesources, sourceprio, blacklist) {

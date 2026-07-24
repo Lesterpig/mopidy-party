@@ -44,6 +44,7 @@ class AddRequestHandler(tornado.web.RequestHandler):
         self.core = core
         self.data = data
         self.maxQueueLength = config["party"]["max_queue_length"]
+        self.playOnQueue = config["party"]["play_on_queue"]
 
     def _getip(self):
         return self.request.headers.get("X-Forwarded-For", self.request.remote_ip)
@@ -80,7 +81,7 @@ class AddRequestHandler(tornado.web.RequestHandler):
             return
 
         self.core.tracklist.set_consume(True)
-        if self.core.playback.get_state().get() == "stopped":
+        if self.playOnQueue and self.core.playback.get_state().get() != "playing":
             self.core.playback.play()
 
 
@@ -154,6 +155,8 @@ class Extension(ext.Extension):
         schema['max_song_duration'] = config.Integer(minimum=0, optional=True)
         schema['source_prio'] = config.String(optional=True)
         schema['source_blacklist'] = config.String(optional=True)
+        schema['autosubmit_time'] = config.Integer(minimum=0, optional=True)
+        schema['play_on_queue'] = config.Boolean(optional=True)
         return schema
 
     def setup(self, registry):

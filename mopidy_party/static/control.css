@@ -1,0 +1,51 @@
+#controlpanel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  padding-top: 10px;
+  padding-left: 15px;
+  padding-right: 15px;
+  padding-bottom: 10px;
+  width: 100%;
+  z-index: 1000;
+}
+
+.alert-container {
+  position: fixed;
+  z-index: 9999;
+  padding: 10px;
+}
+
+.alert-container .alert {
+  pointer-events: auto;
+}
+
+.alert-success {
+  background-color: #155724;
+  color: #d4edda;
+  border-color: transparent;
+}
+.alert-danger {
+  background-color: #721c24;
+  color: #f8d7da;
+  border-color: transparent;
+}
+
+.fade-out {
+  opacity: 0;
+}
+
+
+.search-container {
+  position: relative;
+}
+
+.submit-indicator {
+  position: absolute;
+  right: 30px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-weight: bold;
+  color: #aaa;
+  pointer-events: none;
+}
